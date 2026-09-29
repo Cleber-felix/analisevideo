@@ -1,13 +1,14 @@
 <!DOCTYPE html>
+
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
 <title>analisevideo — o que um cineasta vê no seu vídeo</title>
-<meta name="description" content="Análise visual e cinematográfica de vídeo com Gemini: câmera, luz, paleta, montagem, trilha e como refazer. Banco local pesquisável.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<meta content="Análise visual e cinematográfica de vídeo com Gemini: câmera, luz, paleta, montagem, trilha e como refazer. Banco local pesquisável." name="description"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap" rel="stylesheet"/>
 <style>
   :root{
     --bg:#0c0c10; --bg2:#14141b; --card:#16161e; --line:#272730;
@@ -90,174 +91,158 @@
   footer{padding:46px 0;text-align:center;color:var(--mut);font-size:.9rem}
   .pill{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:.3em .8em;font-size:.78rem;color:var(--mut);margin:0 4px}
 </style>
-</head>
-<body>
-
+<link href="https://inematds.github.io/analisevideo/guia/" hreflang="pt-BR" rel="alternate"/><link href="https://inematds.github.io/analisevideo/guia/en/" hreflang="en" rel="alternate"/><link href="https://inematds.github.io/analisevideo/guia/es/" hreflang="es" rel="alternate"/></head>
+<body><div class="inema-lang" style="position:fixed;right:14px;bottom:14px;z-index:9999;display:flex;gap:2px;padding:4px;border-radius:10px;background:rgba(12,12,16,.82);border:1px solid rgba(226,162,59,.45);font:600 12px/1 Sora,Inter,system-ui,sans-serif;backdrop-filter:blur(8px)" translate="no"><a href="./" hreflang="pt-BR" style="padding:6px 8px;border-radius:7px;text-decoration:none;color:#1a1206;background:#E2A23B">PT</a><a href="en/" hreflang="en" style="padding:6px 8px;border-radius:7px;text-decoration:none;color:#e9e9ee">EN</a><a href="es/" hreflang="es" style="padding:6px 8px;border-radius:7px;text-decoration:none;color:#e9e9ee">ES</a></div>
 <nav><div class="wrap">
-  <a class="brand" href="#top"><span class="emoji">🎬</span> analisevideo</a>
-  <span class="sep">|</span>
-  <span class="clubpro">
-    <a class="inema" href="https://inema.club" target="_blank" rel="noopener">INEMA.CLUB</a>
-    <span class="sep">-</span>
-    <a class="pro" href="https://inema.pro" target="_blank" rel="noopener">PRO</a>
-  </span>
-  <div class="links">
-    <a class="sec" href="#oque">O que é</a>
-    <a class="sec" href="#fluxo">Como funciona</a>
-    <a class="sec" href="#guia">Guia de uso</a>
-    <a class="sec" href="#exemplos">Exemplos</a>
-    <a class="sec" href="#roadmap">Roadmap</a>
-    <button class="tgl" id="themeToggle" aria-label="Alternar tema" title="Alternar tema">🌙</button>
-    <a class="btn" href="https://github.com/inematds/analisevideo" target="_blank" rel="noopener">GitHub</a>
-  </div>
+<a class="brand" href="#top"><span class="emoji">🎬</span> analisevideo</a>
+<span class="sep">|</span>
+<span class="clubpro">
+<a class="inema" href="https://inema.club" rel="noopener" target="_blank">INEMA.CLUB</a>
+<span class="sep">-</span>
+<a class="pro" href="https://inema.pro" rel="noopener" target="_blank">PRO</a>
+</span>
+<div class="links">
+<a class="sec" href="#oque">O que é</a>
+<a class="sec" href="#fluxo">Como funciona</a>
+<a class="sec" href="#guia">Guia de uso</a>
+<a class="sec" href="#exemplos">Exemplos</a>
+<a class="sec" href="#roadmap">Roadmap</a>
+<button aria-label="Alternar tema" class="tgl" id="themeToggle" title="Alternar tema">🌙</button>
+<a class="btn" href="https://github.com/inematds/analisevideo" rel="noopener" target="_blank">GitHub</a>
+</div>
 </div></nav>
-
 <header class="hero" id="top">
-  <div class="glow"></div>
-  <div class="wrap">
-    <div>
-      <span class="chip">Skill do OpenPCBot · Gemini</span>
-      <h1>O que um <span class="amb">cineasta</span> vê no seu vídeo</h1>
-      <p class="lead">Manda um link ou um arquivo e recebe a leitura técnica: movimento de câmera bloco a bloco, esquema de luz, paleta em hex, ritmo de montagem, trilha e som, grafismo, e um passo a passo de como refazer aquilo. Sem transcrever uma palavra da fala.</p>
-      <div class="cta">
-        <a class="btn" href="#guia">Começar o guia</a>
-        <a class="btn ghost" href="https://github.com/inematds/analisevideo" target="_blank" rel="noopener">Ver no GitHub</a>
-      </div>
-    </div>
-    <figure><img src="assets/hero.png" alt="Capa do projeto analisevideo"></figure>
-  </div>
+<div class="glow"></div>
+<div class="wrap">
+<div>
+<span class="chip">Skill do OpenPCBot · Gemini</span>
+<h1>O que um <span class="amb">cineasta</span> vê no seu vídeo</h1>
+<p class="lead">Manda um link ou um arquivo e recebe a leitura técnica: movimento de câmera bloco a bloco, esquema de luz, paleta em hex, ritmo de montagem, trilha e som, grafismo, e um passo a passo de como refazer aquilo. Sem transcrever uma palavra da fala.</p>
+<div class="cta">
+<a class="btn" href="#guia">Começar o guia</a>
+<a class="btn ghost" href="https://github.com/inematds/analisevideo" rel="noopener" target="_blank">Ver no GitHub</a>
+</div>
+</div>
+<figure><img alt="Capa do projeto analisevideo" src="assets/hero.png"/></figure>
+</div>
 </header>
-
 <section id="oque"><div class="wrap">
-  <span class="chip">O que é</span>
-  <h2>Leitura de linguagem audiovisual, não transcrição</h2>
-  <p class="sub">Transcrição já existe (inemaVOX/Whisper). O que faltava era alguém olhar o vídeo e dizer como ele foi feito.</p>
-  <div class="grid g3">
-    <div class="card"><h3>🎥 Câmera bloco a bloco</h3><p>Cada trecho com timecode: plano, ângulo, movimento (dolly, gimbal, whip-pan, drone, orbital), velocidade e o que aquilo faz na cena.</p></div>
-    <div class="card"><h3>🎨 Luz, cor e montagem</h3><p>Paleta em hex, esquema de luz, look e lente aparente; cortes por minuto, ritmo, transições, corte no beat e uso de slow-mo.</p></div>
-    <div class="card"><h3>🗂️ Banco pesquisável</h3><p>Toda análise vira JSON + relatório e entra num índice local. Depois é <code>search drone</code>, <code>search synthwave</code>, <code>stats</code>.</p></div>
-  </div>
+<span class="chip">O que é</span>
+<h2>Leitura de linguagem audiovisual, não transcrição</h2>
+<p class="sub">Transcrição já existe (inemaVOX/Whisper). O que faltava era alguém olhar o vídeo e dizer como ele foi feito.</p>
+<div class="grid g3">
+<div class="card"><h3>🎥 Câmera bloco a bloco</h3><p>Cada trecho com timecode: plano, ângulo, movimento (dolly, gimbal, whip-pan, drone, orbital), velocidade e o que aquilo faz na cena.</p></div>
+<div class="card"><h3>🎨 Luz, cor e montagem</h3><p>Paleta em hex, esquema de luz, look e lente aparente; cortes por minuto, ritmo, transições, corte no beat e uso de slow-mo.</p></div>
+<div class="card"><h3>🗂️ Banco pesquisável</h3><p>Toda análise vira JSON + relatório e entra num índice local. Depois é <code>search drone</code>, <code>search synthwave</code>, <code>stats</code>.</p></div>
+</div>
 </div></section>
-
 <section id="fluxo"><div class="wrap">
-  <span class="chip">Como funciona</span>
-  <h2>Do link ao relatório em uma chamada</h2>
-  <p class="sub">Tudo local, menos a leitura visual, que é do Gemini.</p>
-  <div class="flow">
-    <span>link ou arquivo</span><span class="arr">→</span>
-    <span>yt-dlp (≤480p)</span><span class="arr">→</span>
-    <span>ffprobe: duração e formato</span><span class="arr">→</span>
-    <span>Gemini: leitura de cineasta</span><span class="arr">→</span>
-    <span>analise.json + analise.md</span><span class="arr">→</span>
-    <span>index.jsonl (banco)</span>
-  </div>
-  <div class="grid g3" style="margin-top:22px">
-    <div class="card"><h3>Por que 480p</h3><p>Cor, luz e movimento se leem bem nessa resolução e o upload fica rápido. Acima de 18 MB o arquivo é reencodado para 360p/12fps só para a análise.</p></div>
-    <div class="card"><h3>O que não faz</h3><p>Não roda Whisper, não devolve legenda, não clona música. Fala é com o inemaVOX; clonar faixa é com a skill musica.</p></div>
-    <div class="card"><h3>Só por comando</h3><p>No bot, roda apenas em <code>/analisevideo</code>. Link solto no Telegram continua indo para a transcrição, de propósito.</p></div>
-  </div>
+<span class="chip">Como funciona</span>
+<h2>Do link ao relatório em uma chamada</h2>
+<p class="sub">Tudo local, menos a leitura visual, que é do Gemini.</p>
+<div class="flow">
+<span>link ou arquivo</span><span class="arr">→</span>
+<span>yt-dlp (≤480p)</span><span class="arr">→</span>
+<span>ffprobe: duração e formato</span><span class="arr">→</span>
+<span>Gemini: leitura de cineasta</span><span class="arr">→</span>
+<span>analise.json + analise.md</span><span class="arr">→</span>
+<span>index.jsonl (banco)</span>
+</div>
+<div class="grid g3" style="margin-top:22px">
+<div class="card"><h3>Por que 480p</h3><p>Cor, luz e movimento se leem bem nessa resolução e o upload fica rápido. Acima de 18 MB o arquivo é reencodado para 360p/12fps só para a análise.</p></div>
+<div class="card"><h3>O que não faz</h3><p>Não roda Whisper, não devolve legenda, não clona música. Fala é com o inemaVOX; clonar faixa é com a skill musica.</p></div>
+<div class="card"><h3>Só por comando</h3><p>No bot, roda apenas em <code>/analisevideo</code>. Link solto no Telegram continua indo para a transcrição, de propósito.</p></div>
+</div>
 </div></section>
-
 <section id="pre"><div class="wrap">
-  <span class="chip">Pré-requisitos</span>
-  <h2>O que precisa estar na máquina</h2>
-  <p class="sub">Nada de servidor: é shell + python3 + uma chave do Gemini.</p>
-  <div class="grid g3">
-    <div class="card"><h3>Binários</h3><p>Download, leitura de metadados e consulta ao banco.</p><pre><span class="c"># Ubuntu/Debian</span>
+<span class="chip">Pré-requisitos</span>
+<h2>O que precisa estar na máquina</h2>
+<p class="sub">Nada de servidor: é shell + python3 + uma chave do Gemini.</p>
+<div class="grid g3">
+<div class="card"><h3>Binários</h3><p>Download, leitura de metadados e consulta ao banco.</p><pre><span class="c"># Ubuntu/Debian</span>
 <span class="k">sudo apt install</span> ffmpeg jq python3
 <span class="k">pip install -U</span> yt-dlp</pre></div>
-    <div class="card"><h3>Chave do Gemini</h3><p>Lida em runtime do <code>.env</code> do OpenPCBot (ou do wifi). Nunca é copiada para cá.</p><pre><span class="c"># ~/projetos/openpcbotv2/.env</span>
+<div class="card"><h3>Chave do Gemini</h3><p>Lida em runtime do <code>.env</code> do OpenPCBot (ou do wifi). Nunca é copiada para cá.</p><pre><span class="c"># ~/projetos/openpcbotv2/.env</span>
 <span class="k">GOOGLE_API_KEY</span>=<span class="s">...</span></pre></div>
-    <div class="card"><h3>Clone</h3><p>O repo é a skill: o OpenPCBot aponta para cá por symlink.</p><pre><span class="k">git clone</span> <span class="s">git@github.com:inematds/analisevideo.git</span> \
+<div class="card"><h3>Clone</h3><p>O repo é a skill: o OpenPCBot aponta para cá por symlink.</p><pre><span class="k">git clone</span> <span class="s">git@github.com:inematds/analisevideo.git</span> \
   ~/projetos/analisevideo</pre></div>
-  </div>
+</div>
 </div></section>
-
 <section id="guia"><div class="wrap">
-  <span class="chip">Guia de uso · passo a passo</span>
-  <h2>Analisar, ler e consultar</h2>
-  <p class="sub">Comandos reais. <code>S=~/projetos/analisevideo/analisevideo.sh</code></p>
-
-  <div class="step"><div class="b">1</div><div>
-    <h3>Analisar um link</h3>
-    <p>Baixa, lê o visual e arquiva. O caminho do relatório sai na última linha.</p>
+<span class="chip">Guia de uso · passo a passo</span>
+<h2>Analisar, ler e consultar</h2>
+<p class="sub">Comandos reais. <code>S=~/projetos/analisevideo/analisevideo.sh</code></p>
+<div class="step"><div class="b">1</div><div>
+<h3>Analisar um link</h3>
+<p>Baixa, lê o visual e arquiva. O caminho do relatório sai na última linha.</p>
 <pre><span class="k">bash $S analisa</span> <span class="s">"https://www.youtube.com/shorts/XXXX"</span>  <span class="c"># baixa, analisa, indexa</span></pre>
-  </div></div>
-
-  <div class="step"><div class="b">2</div><div>
-    <h3>Analisar um arquivo local</h3>
-    <p>Serve para material que o yt-dlp não pega (site logado) ou para um trecho já cortado.</p>
+</div></div>
+<div class="step"><div class="b">2</div><div>
+<h3>Analisar um arquivo local</h3>
+<p>Serve para material que o yt-dlp não pega (site logado) ou para um trecho já cortado.</p>
 <pre><span class="k">bash $S analisa</span> ~/videos/reel.mp4 reel-marca <span class="k">--keep-src</span>  <span class="c"># guarda o fonte.mp4</span></pre>
-  </div></div>
-
-  <div class="step"><div class="b">3</div><div>
-    <h3>Focar a análise numa pergunta</h3>
-    <p><code>--prompt</code> acrescenta um pedido específico, respondido no campo <code>pedido_extra</code>.</p>
+</div></div>
+<div class="step"><div class="b">3</div><div>
+<h3>Focar a análise numa pergunta</h3>
+<p><code>--prompt</code> acrescenta um pedido específico, respondido no campo <code>pedido_extra</code>.</p>
 <pre><span class="k">bash $S analisa</span> <span class="s">"&lt;url&gt;"</span> <span class="k">--prompt</span> <span class="s">"como eles seguram a atenção nos 3 primeiros segundos"</span></pre>
-  </div></div>
-
-  <div class="step"><div class="b">4</div><div>
-    <h3>Ler o relatório de novo</h3>
-    <p>Markdown pronto para colar em briefing, roteiro ou ordem de serviço.</p>
+</div></div>
+<div class="step"><div class="b">4</div><div>
+<h3>Ler o relatório de novo</h3>
+<p>Markdown pronto para colar em briefing, roteiro ou ordem de serviço.</p>
 <pre><span class="k">bash $S ver</span> reel-marca      <span class="c"># relatório</span>
 <span class="k">bash $S json</span> reel-marca     <span class="c"># estruturado, para script</span></pre>
-  </div></div>
-
-  <div class="step"><div class="b">5</div><div>
-    <h3>Consultar o banco</h3>
-    <p>É aqui que a coisa vira acervo: procurar por movimento, look, gênero da trilha ou tag.</p>
+</div></div>
+<div class="step"><div class="b">5</div><div>
+<h3>Consultar o banco</h3>
+<p>É aqui que a coisa vira acervo: procurar por movimento, look, gênero da trilha ou tag.</p>
 <pre><span class="k">bash $S list</span> 10               <span class="c"># últimas 10 análises</span>
 <span class="k">bash $S search</span> <span class="s">"drone"</span>       <span class="c"># tudo que tem drone</span>
 <span class="k">bash $S stats</span>                <span class="c"># movimentos e tags mais frequentes</span></pre>
-  </div></div>
-
-  <div class="step"><div class="b">6</div><div>
-    <h3>No Telegram, pelo OpenPCBot</h3>
-    <p>A skill é ligada como comando do bot — não dispara sozinha por link.</p>
+</div></div>
+<div class="step"><div class="b">6</div><div>
+<h3>No Telegram, pelo OpenPCBot</h3>
+<p>A skill é ligada como comando do bot — não dispara sozinha por link.</p>
 <pre><span class="k">/analisevideo</span> <span class="s">&lt;url|caminho&gt;</span>   <span class="c"># resumo + analise.md anexado</span>
 <span class="k">/analisevideo</span> search drone
 <span class="k">/analisevideo</span> stats</pre>
-  </div></div>
+</div></div>
 </div></section>
-
 <section id="exemplos"><div class="wrap">
-  <span class="chip">Exemplos</span>
-  <h2>Trechos de relatório real</h2>
-  <p class="sub">Saída de uma análise de 5s de um infográfico animado.</p>
-  <div class="grid g3">
-    <div class="card"><h3>Fotografia</h3><pre>Paleta: #5DA9E9, #E85D3F, #46729B,
+<span class="chip">Exemplos</span>
+<h2>Trechos de relatório real</h2>
+<p class="sub">Saída de uma análise de 5s de um infográfico animado.</p>
+<div class="grid g3">
+<div class="card"><h3>Fotografia</h3><pre>Paleta: #5DA9E9, #E85D3F, #46729B,
         #8C9BAE, #58B868, #FFFFFF
 Luz: iluminação digital uniforme
 Cor: equilibrada · contraste médio
 Look: infográfico didático / flat 3D</pre></div>
-    <div class="card"><h3>Câmera</h3><pre>00:00–00:05 · geral · estático
+<div class="card"><h3>Câmera</h3><pre>00:00–00:05 · geral · estático
   · plongée — quadro fixo com o
   diagrama animado por camadas</pre></div>
-    <div class="card"><h3>Banco</h3><pre>$ bash $S search tornado
+<div class="card"><h3>Banco</h3><pre>$ bash $S search tornado
 teste-agnes [motion graphics explicativo]
   tags: infografico, motion graphics,
   tornado, meteorologia, didatico</pre></div>
-  </div>
+</div>
 </div></section>
-
 <section id="roadmap"><div class="wrap">
-  <span class="chip">Roadmap</span>
-  <h2>Onde está e para onde vai</h2>
-  <p class="sub">O núcleo funciona hoje; o resto é acervo em cima dele.</p>
-  <div class="phase"><div class="tag">Feito</div><div class="d"><strong>Análise + banco</strong><span>Download, leitura cinematográfica, relatório markdown, índice pesquisável, retry no Gemini e comando no bot.</span></div></div>
-  <div class="phase"><div class="tag">Próximo</div><div class="d"><strong>Comparar vídeos</strong><span>Pôr duas análises lado a lado (ritmo, paleta, gancho) para decidir referência de um projeto.</span></div></div>
-  <div class="phase"><div class="tag">Depois</div><div class="d"><strong>Do banco para a produção</strong><span>Transformar o campo <code>reproduzir</code> em ordem de serviço direta para pixflow / Kling / Veo.</span></div></div>
+<span class="chip">Roadmap</span>
+<h2>Onde está e para onde vai</h2>
+<p class="sub">O núcleo funciona hoje; o resto é acervo em cima dele.</p>
+<div class="phase"><div class="tag">Feito</div><div class="d"><strong>Análise + banco</strong><span>Download, leitura cinematográfica, relatório markdown, índice pesquisável, retry no Gemini e comando no bot.</span></div></div>
+<div class="phase"><div class="tag">Próximo</div><div class="d"><strong>Comparar vídeos</strong><span>Pôr duas análises lado a lado (ritmo, paleta, gancho) para decidir referência de um projeto.</span></div></div>
+<div class="phase"><div class="tag">Depois</div><div class="d"><strong>Do banco para a produção</strong><span>Transformar o campo <code>reproduzir</code> em ordem de serviço direta para pixflow / Kling / Veo.</span></div></div>
 </div></section>
-
 <footer>
-  <div class="wrap">
-    <div class="pill">bash</div><div class="pill">python3</div><div class="pill">Gemini</div><div class="pill">yt-dlp</div><div class="pill">ffmpeg</div>
-    <p style="margin-top:18px">analisevideo · skill do OpenPCBot ·
+<div class="wrap">
+<div class="pill">bash</div><div class="pill">python3</div><div class="pill">Gemini</div><div class="pill">yt-dlp</div><div class="pill">ffmpeg</div>
+<p style="margin-top:18px">analisevideo · skill do OpenPCBot ·
       <a href="https://github.com/inematds/analisevideo">inematds/analisevideo</a> ·
       <a href="https://inema.club">INEMA.CLUB</a></p>
-  </div>
+</div>
 </footer>
-
 <script>
   (function(){
     var KEY='analisevideo-theme';

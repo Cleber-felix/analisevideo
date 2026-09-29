@@ -1,5 +1,7 @@
 # analisevideo
 
+**🇧🇷 [Português](README.md) · 🇺🇸 [English](README.en.md) · 🇪🇸 [Español](README.es.md)**
+
 Análise **visual e cinematográfica** de vídeo com o Gemini, arquivada num banco
 local pesquisável. Não é transcrição de fala: o que sai daqui é o que um diretor
 de fotografia, um montador e um produtor musical enxergam no material.
