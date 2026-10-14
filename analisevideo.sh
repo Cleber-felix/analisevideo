@@ -22,13 +22,25 @@ case ":$PATH:" in
 esac
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROOT="$(cd "$HERE/../.." && pwd)"
 BANCO="${ANALISEVIDEO_BANCO:-$HOME/projetos/output/analisevideo}"
 INDEX="$BANCO/index.jsonl"
 MAX_H="${ANALISEVIDEO_MAX_H:-480}"   # 480p basta pra ler luz/camera e mantem o upload leve
 mkdir -p "$BANCO"
 
 die() { echo "[analisevideo] erro: $*" >&2; exit 1; }
+
+# pasta criada por esta execucao; se a analise nao chegar ao fim, e removida
+# (antes ficavam pastas vazias/parciais no banco a cada download que falhava).
+NOVA_DIR=""
+limpa_falha() {
+  [ $? -ne 0 ] && [ -n "$NOVA_DIR" ] && [ -d "$NOVA_DIR" ] && rm -rf "$NOVA_DIR"
+}
+trap limpa_falha EXIT
+
+nova_dir() {
+  [ -d "$1" ] || NOVA_DIR="$1"
+  mkdir -p "$1"
+}
 
 # Sites que EXIGEM sessão: cookies do navegador, como o inemavox já fazia.
 #
@@ -71,16 +83,47 @@ pasta_com_a_url() {
   done
 }
 
+site_de() {
+  case "$1" in
+    *youtube.com*|*youtu.be*) echo youtube ;;
+    *tiktok.com*) echo tiktok ;;
+    *instagram.com*) echo instagram ;;
+    *facebook.com*|*fb.com*|*fb.watch*) echo facebook ;;
+    *vimeo.com*) echo vimeo ;;
+    *x.com*|*twitter.com*) echo twitter ;;
+    *) echo outro ;;
+  esac
+}
+
+# Cookies EXPORTADOS (formato Netscape). Numa VPS nao ha Firefox, e YouTube/Vimeo
+# bloqueiam IP de servidor ("confirm you're not a bot") — medido em 2026-10-14,
+# seis player_client do yt-dlp, todos recusados. Ordem: $ANALISEVIDEO_COOKIES,
+# cookies/<site>.txt aqui, <site>_cookies.txt do inemavox.
+arquivo_de_cookies() {
+  local site c; site="$(site_de "$1")"
+  for c in "${ANALISEVIDEO_COOKIES:-}" "$HERE/cookies/$site.txt" \
+           "$HOME/projetos/apps/inemavox/${site}_cookies.txt"; do
+    [ -n "$c" ] && [ -f "$c" ] && { echo "$c"; return; }
+  done
+}
+
 # As flags de download para ESTA url. Ecoa nada quando não há o que acrescentar.
 flags_do_site() {
-  local url="$1" perfil
+  local url="$1" perfil cookies
+  [ -n "${ANALISEVIDEO_PROXY:-}" ] && printf '%s\n' "--proxy" "$ANALISEVIDEO_PROXY"
+  cookies="$(arquivo_de_cookies "$url")"
+  if [ -n "$cookies" ]; then
+    echo "[analisevideo] usando cookies: $cookies" >&2
+    printf '%s\n' "--cookies" "$cookies"
+  fi
   case "$url" in
-    *facebook.com*|*fb.com*|*fb.watch*|*instagram.com*|*tiktok.com*|*youtube.com*|*youtu.be*)
+    *facebook.com*|*fb.com*|*fb.watch*|*instagram.com*|*tiktok.com*|*youtube.com*|*youtu.be*|*vimeo.com*)
       perfil="$(perfil_firefox)"
-      if [ -n "$perfil" ]; then
+      if [ -n "$cookies" ]; then :
+      elif [ -n "$perfil" ]; then
         printf '%s\n' "--cookies-from-browser" "firefox:$perfil"
       else
-        echo "[analisevideo] aviso: site que costuma exigir login e nenhum perfil do Firefox nesta maquina" >&2
+        echo "[analisevideo] aviso: site que costuma exigir login, sem cookies/$(site_de "$url").txt nem perfil do Firefox" >&2
       fi
       case "$url" in
         *facebook.com*|*fb.com*|*fb.watch*|*instagram.com*)
@@ -107,7 +150,8 @@ load_key() {
   local achou=0 nome v f
   for nome in $CHAVES_GEMINI $CHAVES_RESERVA; do
     [ -n "$(eval echo "\${$nome:-}")" ] && { case " $CHAVES_GEMINI " in *" $nome "*) achou=1 ;; esac; continue; }
-    for f in "$ROOT/.env" "$HOME/projetos/wifi/.env"; do
+    # ordem: .env do proprio app > openpcbotv2 (quando roda como skill do bot) > wifi
+    for f in "$HERE/.env" "$HOME/projetos/openpcbotv2/.env" "$HOME/projetos/wifi/.env"; do
       [ -f "$f" ] || continue
       v="$(grep -m1 "^$nome=" "$f" | cut -d= -f2- | tr -d '"'"'"' \r')"
       # A RESERVA nao conta como "achou": ela e rede, nao motor. Sem Gemini
@@ -117,7 +161,7 @@ load_key() {
       [ -n "$v" ] && { export "$nome=$v"; case " $CHAVES_GEMINI " in *" $nome "*) achou=1 ;; esac; break; }
     done
   done
-  [ "$achou" = 1 ] || echo "[analisevideo] aviso: nenhuma chave do Gemini (.env do repo ou do wifi) — vai direto para a reserva" >&2
+  [ "$achou" = 1 ] || echo "[analisevideo] aviso: nenhuma chave do Gemini (.env do app, do openpcbotv2 ou do wifi) — vai direto para a reserva" >&2
 }
 
 slugify() {
@@ -156,29 +200,39 @@ analisa|prep)
     URL="$SRC"
     command -v yt-dlp >/dev/null || die "yt-dlp nao instalado"
     mapfile -t FLAGS < <(flags_do_site "$URL")
-    TITULO="$(yt-dlp --no-warnings "${FLAGS[@]}" --print '%(title)s' --skip-download "$URL" 2>/dev/null | head -1)"
-    UPLOADER="$(yt-dlp --no-warnings "${FLAGS[@]}" --print '%(uploader)s' --skip-download "$URL" 2>/dev/null | head -1)"
-    DATA="$(yt-dlp --no-warnings "${FLAGS[@]}" --print '%(upload_date)s' --skip-download "$URL" 2>/dev/null | head -1)"
     REUSO="$(pasta_com_a_url "$URL")"
+    # uma chamada so pros metadados; se falhar aqui, o download tambem falharia
+    if INFO="$(yt-dlp --no-warnings --no-playlist "${FLAGS[@]}" --skip-download \
+         --print '%(title)s' --print '%(uploader)s' --print '%(upload_date)s' "$URL" 2>"$BANCO/.ytdlp-erro")"; then
+      { read -r TITULO; read -r UPLOADER; read -r DATA; } <<< "$INFO"
+      [ "$UPLOADER" = NA ] && UPLOADER=""; [ "$DATA" = NA ] && DATA=""
+    elif [ -z "$REUSO" ]; then
+      cat "$BANCO/.ytdlp-erro" >&2; rm -f "$BANCO/.ytdlp-erro"
+      [ "$(site_de "$URL")" != outro ] && die "o site recusou o acesso deste servidor. Exporte os cookies de uma conta logada
+  (extensao 'Get cookies.txt LOCALLY', formato Netscape) para
+  $HERE/cookies/$(site_de "$URL").txt  — ou baixe o video por fora e passe o arquivo."
+      die "yt-dlp nao conseguiu ler o link. Baixe o video por fora e passe o arquivo."
+    fi
+    rm -f "$BANCO/.ytdlp-erro"
     if [ -n "$REUSO" ] && [ -z "$SLUG" ]; then
       DIR="$REUSO"; SLUG="$(basename "$DIR")"
       FILE="$(jq -r '.arquivo' "$DIR/meta.json")"
       echo "[analisevideo] este video ja estava baixado em $SLUG — reusando (sem baixar de novo)" >&2
     else
     [ -z "$SLUG" ] && SLUG="$(mk_slug "${TITULO:-video}")"
-    DIR="$BANCO/$SLUG"; mkdir -p "$DIR"
+    DIR="$BANCO/$SLUG"; nova_dir "$DIR"
     echo "[analisevideo] baixando (<=${MAX_H}p)..." >&2
     yt-dlp --no-warnings --no-playlist "${FLAGS[@]}" \
       -f "bv*[height<=$MAX_H]+ba/b[height<=$MAX_H]/b" \
       --merge-output-format mp4 -o "$DIR/fonte.%(ext)s" "$URL" >&2 \
-      || die "download falhou (yt-dlp). Se for site logado, confira a sessao no Firefox (ou baixe manual e passe o path)."
+      || die "download falhou (yt-dlp). Se for site logado, confira cookies/<site>.txt ou a sessao no Firefox (ou baixe manual e passe o path)."
     FILE="$(ls -1 "$DIR"/fonte.* 2>/dev/null | head -1)"
     fi
   else
     [ -f "$SRC" ] || die "arquivo nao existe: $SRC"
     TITULO="$(basename "$SRC")"
     [ -z "$SLUG" ] && SLUG="$(mk_slug "${TITULO%.*}")"
-    DIR="$BANCO/$SLUG"; mkdir -p "$DIR"
+    DIR="$BANCO/$SLUG"; nova_dir "$DIR"
     FILE="$DIR/fonte.${SRC##*.}"
     cp -f "$SRC" "$FILE"
   fi

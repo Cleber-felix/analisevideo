@@ -17,7 +17,7 @@ Complete guide (landing page + walkthrough): **https://inematds.github.io/analis
 ## Usage
 
 ```bash
-S=~/projetos/analisevideo/analisevideo.sh
+S=~/projetos/apps/analisevideo/analisevideo.sh
 
 bash $S analisa <url|arquivo> [slug] [--keep-src] [--prompt "..."]
 bash $S ver     <slug>       # markdown report

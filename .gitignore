@@ -1,3 +1,5 @@
 out/
 *.mp4
 __pycache__/
+.env
+cookies/
