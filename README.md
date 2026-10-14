@@ -15,7 +15,7 @@ Guia completo (landing + passo a passo): **https://inematds.github.io/analisevid
 ## Uso
 
 ```bash
-S=~/projetos/analisevideo/analisevideo.sh
+S=~/projetos/apps/analisevideo/analisevideo.sh
 
 bash $S analisa <url|arquivo> [slug] [--keep-src] [--prompt "..."]
 bash $S ver     <slug>       # relatório markdown
@@ -28,7 +28,8 @@ bash $S reindex              # reconstrói o índice a partir das pastas
 ```
 
 Precisa de `yt-dlp`, `ffmpeg`/`ffprobe`, `jq`, `python3` e uma `GOOGLE_API_KEY`
-(lida de `~/projetos/openpcbotv2/.env` ou `~/projetos/wifi/.env`).
+(lida de `.env` na pasta do app; fallbacks: `~/projetos/openpcbotv2/.env` e
+`~/projetos/wifi/.env`).
 
 ## O que a análise cobre
 
@@ -61,6 +62,13 @@ apagado no fim (guarde com `--keep-src`).
 - Download em até 480p de propósito: cor, luz e movimento se leem bem e o upload
   fica rápido. Acima de 18 MB o arquivo é reencodado para 360p/12fps só para a
   análise.
-- Link que o yt-dlp não pega (site logado): baixe por fora e passe o caminho.
+- **YouTube, Vimeo, TikTok etc. bloqueiam IP de servidor** ("confirm you're not a bot").
+  Exporte os cookies de uma conta logada (extensão *Get cookies.txt LOCALLY*,
+  formato Netscape) para `cookies/<site>.txt` nesta pasta (`youtube.txt`,
+  `vimeo.txt`, `tiktok.txt`, `instagram.txt`...). Também valem
+  `ANALISEVIDEO_COOKIES=/caminho/cookies.txt`, os `<site>_cookies.txt` do inemavox
+  e `ANALISEVIDEO_PROXY=...`. A pasta `cookies/` fica fora do git.
+- Link que o yt-dlp não pega mesmo assim: baixe por fora e passe o caminho.
+- Se a análise falhar, a pasta criada para ela é removida (o banco não acumula lixo).
 - Vídeo longo (>15 min) fica caro e vago — prefira analisar um trecho.
 - 429/500/503 do Gemini são reprocessados automaticamente (4 tentativas).

@@ -13,7 +13,6 @@
 set -uo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROOT="$(cd "$HERE/../.." && pwd)"
 BANCO="${ANALISEVIDEO_BANCO:-$HOME/projetos/output/analisevideo}"
 INDEX="$BANCO/index.jsonl"
 MAX_H="${ANALISEVIDEO_MAX_H:-480}"   # 480p basta pra ler luz/camera e mantem o upload leve
@@ -21,14 +20,28 @@ mkdir -p "$BANCO"
 
 die() { echo "[analisevideo] erro: $*" >&2; exit 1; }
 
+# pasta criada por esta execucao; se a analise nao chegar ao fim, e removida
+# (antes ficavam pastas vazias/parciais no banco a cada download que falhava).
+NOVA_DIR=""
+limpa_falha() {
+  [ $? -ne 0 ] && [ -n "$NOVA_DIR" ] && [ -d "$NOVA_DIR" ] && rm -rf "$NOVA_DIR"
+}
+trap limpa_falha EXIT
+
+nova_dir() {
+  [ -d "$1" ] || NOVA_DIR="$1"
+  mkdir -p "$1"
+}
+
 load_key() {
   [ -n "${GOOGLE_API_KEY:-}" ] && return 0
-  for f in "$ROOT/.env" "$HOME/projetos/wifi/.env"; do
+  # ordem: .env do proprio app > openpcbotv2 (quando roda como skill do bot) > wifi
+  for f in "$HERE/.env" "$HOME/projetos/openpcbotv2/.env" "$HOME/projetos/wifi/.env"; do
     [ -f "$f" ] || continue
     local v; v="$(grep -m1 '^GOOGLE_API_KEY=' "$f" | cut -d= -f2- | tr -d '"'"'"' \r')"
     [ -n "$v" ] && { export GOOGLE_API_KEY="$v"; return 0; }
   done
-  die "GOOGLE_API_KEY nao encontrada (.env do openpcbotv2 ou do wifi)"
+  die "GOOGLE_API_KEY nao encontrada ($HERE/.env, openpcbotv2/.env ou wifi/.env)"
 }
 
 slugify() {
@@ -42,6 +55,36 @@ mk_slug() {
   local s="$base" i=2
   while [ -d "$BANCO/$s" ]; do s="$base-$i"; i=$((i+1)); done
   echo "$s"
+}
+
+# YouTube/Vimeo/TikTok bloqueiam IP de servidor ("confirm you're not a bot"):
+# sem cookies de uma conta logada o download nao sai. Procura, nesta ordem:
+# $ANALISEVIDEO_COOKIES, cookies/<site>.txt aqui, <site>_cookies.txt do inemavox.
+site_de() {
+  case "$1" in
+    *youtube.com*|*youtu.be*) echo youtube ;;
+    *tiktok.com*) echo tiktok ;;
+    *instagram.com*) echo instagram ;;
+    *facebook.com*|*fb.watch*) echo facebook ;;
+    *vimeo.com*) echo vimeo ;;
+    *x.com*|*twitter.com*) echo twitter ;;
+    *) echo outro ;;
+  esac
+}
+
+YTDLP_AUTH=()
+ytdlp_auth() {
+  local site; site="$(site_de "$1")"
+  local c
+  for c in "${ANALISEVIDEO_COOKIES:-}" "$HERE/cookies/$site.txt" \
+           "$HOME/projetos/apps/inemavox/${site}_cookies.txt"; do
+    [ -n "$c" ] && [ -f "$c" ] || continue
+    YTDLP_AUTH+=(--cookies "$c")
+    echo "[analisevideo] usando cookies: $c" >&2
+    break
+  done
+  [ -n "${ANALISEVIDEO_PROXY:-}" ] && YTDLP_AUTH+=(--proxy "$ANALISEVIDEO_PROXY")
+  return 0
 }
 
 cmd="${1:-help}"; shift || true
@@ -66,13 +109,24 @@ analisa|prep)
   if [[ "$SRC" =~ ^https?:// ]]; then
     URL="$SRC"
     command -v yt-dlp >/dev/null || die "yt-dlp nao instalado"
-    TITULO="$(yt-dlp --no-warnings --print '%(title)s' --skip-download "$URL" 2>/dev/null | head -1)"
-    UPLOADER="$(yt-dlp --no-warnings --print '%(uploader)s' --skip-download "$URL" 2>/dev/null | head -1)"
-    DATA="$(yt-dlp --no-warnings --print '%(upload_date)s' --skip-download "$URL" 2>/dev/null | head -1)"
+    ytdlp_auth "$URL"
+    # uma chamada so pros metadados; se falhar aqui, o download tambem falharia
+    INFO="$(yt-dlp --no-warnings --no-playlist "${YTDLP_AUTH[@]}" --skip-download \
+      --print '%(title)s' --print '%(uploader)s' --print '%(upload_date)s' "$URL" 2>"$BANCO/.ytdlp-erro")" \
+      || { cat "$BANCO/.ytdlp-erro" >&2; rm -f "$BANCO/.ytdlp-erro"
+           if [ "$(site_de "$URL")" != outro ]; then
+             die "o site recusou o acesso deste servidor. Exporte os cookies de uma conta logada
+  (extensao 'Get cookies.txt LOCALLY', formato Netscape) para
+  $HERE/cookies/$(site_de "$URL").txt  — ou baixe o video por fora e passe o arquivo."
+           fi
+           die "yt-dlp nao conseguiu ler o link. Baixe o video por fora e passe o arquivo."; }
+    rm -f "$BANCO/.ytdlp-erro"
+    { read -r TITULO; read -r UPLOADER; read -r DATA; } <<< "$INFO"
+    [ "$UPLOADER" = NA ] && UPLOADER=""; [ "$DATA" = NA ] && DATA=""
     [ -z "$SLUG" ] && SLUG="$(mk_slug "${TITULO:-video}")"
-    DIR="$BANCO/$SLUG"; mkdir -p "$DIR"
+    DIR="$BANCO/$SLUG"; nova_dir "$DIR"
     echo "[analisevideo] baixando (<=${MAX_H}p)..." >&2
-    yt-dlp --no-warnings --no-playlist \
+    yt-dlp --no-warnings --no-playlist "${YTDLP_AUTH[@]}" \
       -f "bv*[height<=$MAX_H]+ba/b[height<=$MAX_H]/b" \
       --merge-output-format mp4 -o "$DIR/fonte.%(ext)s" "$URL" >&2 \
       || die "download falhou (yt-dlp). Se for site logado, baixe manual e passe o path."
@@ -81,7 +135,7 @@ analisa|prep)
     [ -f "$SRC" ] || die "arquivo nao existe: $SRC"
     TITULO="$(basename "$SRC")"
     [ -z "$SLUG" ] && SLUG="$(mk_slug "${TITULO%.*}")"
-    DIR="$BANCO/$SLUG"; mkdir -p "$DIR"
+    DIR="$BANCO/$SLUG"; nova_dir "$DIR"
     FILE="$DIR/fonte.${SRC##*.}"
     cp -f "$SRC" "$FILE"
   fi
