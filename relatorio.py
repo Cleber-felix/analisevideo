@@ -25,8 +25,21 @@ def lista(v):
     return str(v)
 
 
+def limpa(v):
+    """Campo vazio some (o `.get(k, '-')` so cai no '-' se a chave faltar) e
+    booleano vira sim/nao — senao o relatorio mostrava `None` e `False`."""
+    if isinstance(v, dict):
+        return {k: limpa(x) for k, x in v.items()
+                if x is not None and str(x).strip().lower() not in ("", "none", "null")}
+    if isinstance(v, list):
+        return [limpa(x) for x in v if x is not None]
+    if isinstance(v, bool):
+        return "sim" if v else "não"
+    return v
+
+
 def main() -> int:
-    a = json.load(open(sys.argv[1]))
+    a = limpa(json.load(open(sys.argv[1])))
     slug = sys.argv[2] if len(sys.argv) > 2 else ""
     if a.get("erro"):
         print(f"Falhou: {a['erro']}")
@@ -62,14 +75,17 @@ def main() -> int:
     o.append(f"- {m.get('cortes_estimados', '-')} cortes · {m.get('cortes_por_minuto', '-')}/min "
              f"· ritmo {m.get('ritmo', '-')}")
     o.append(f"- Transicoes: {lista(m.get('tipos_de_transicao'))}")
-    o.append(f"- match cut: {m.get('match_cut')} · jump cut: {m.get('jump_cut')} "
-             f"· corte no beat: {m.get('corte_no_beat')}")
+    o.append(f"- match cut: {m.get('match_cut', '-')} · jump cut: {m.get('jump_cut', '-')} "
+             f"· corte no beat: {m.get('corte_no_beat', '-')}")
     o.append(f"- Velocidade: {m.get('uso_de_slowmo_speedramp', '-')}")
 
     au = a.get("audio") or {}
     o.append("\n## Trilha e som")
-    o.append(f"- Musica: {au.get('tem_musica')} · {au.get('genero', '-')}/{au.get('subgenero', '-')} "
-             f"· ~{au.get('bpm_aprox', '-')} bpm · {au.get('tonalidade_aprox', '-')}")
+    if au.get("tem_musica") == "não":
+        o.append("- Musica: não")
+    else:
+        o.append(f"- Musica: {au.get('tem_musica', '-')} · {au.get('genero', '-')}/{au.get('subgenero', '-')} "
+                 f"· ~{au.get('bpm_aprox', '-')} bpm · {au.get('tonalidade_aprox', '-')}")
     o.append(f"- Instrumentacao: {lista(au.get('instrumentacao'))}")
     o.append(f"- Mood/energia: {au.get('mood', '-')} · {au.get('energia', '-')}")
     o.append(f"- SFX: {lista(au.get('sfx'))}")
